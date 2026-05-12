@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — Addict Aware{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    <!-- Top Nav -->
+    <nav class="app-nav">
+        <div class="app-nav-inner">
+            <a href="/" class="nav-logo">
+                <span class="logo-icon">◈</span>
+                <span class="logo-text">Addict Aware</span>
+            </a>
+            <div class="app-nav-links">
+                <a href="{{ url_for('user.dashboard') }}" class="active"><i class="bi bi-speedometer2"></i>
+                    Dashboard</a>
+                <a href="{{ url_for('user.assessment') }}"><i class="bi bi-clipboard2-pulse"></i> Assessment</a>
+                <a href="{{ url_for('user.progress') }}"><i class="bi bi-graph-up"></i> Progress</a>
+                <a href="{{ url_for('user.tips') }}"><i class="bi bi-lightbulb"></i> Tips</a>
+                <a href="{{ url_for('user.feedback') }}"><i class="bi bi-chat-dots"></i> Feedback</a>
+            </div>
+            <div class="app-nav-user">
+                <span class="user-name">{{ user.name }}</span>
+                <a href="{{ url_for('auth.logout') }}" class="btn-logout"><i class="bi bi-box-arrow-right"></i></a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="app-main">
+        <div class="container-fluid px-4">
+            <!-- Welcome Header -->
+            <div class="dash-header">
+                <div>
+                    <h1 class="dash-title">Welcome, {{ user.name }} <span class="wave-emoji">👋</span></h1>
+                    <p class="dash-subtitle">Here's your digital wellness overview</p>
+                </div>
+                <div class="dash-actions">
+                    <a href="{{ url_for('user.assessment') }}" class="btn-action btn-action-primary">
+                        <i class="bi bi-plus-lg"></i> New Assessment
+                    </a>
+                    <a href="{{ url_for('user.download_report') }}" class="btn-action btn-action-outline">
+                        <i class="bi bi-download"></i> PDF Report
+                    </a>
+                </div>
+            </div>
+
+            <!-- KPI Row -->
+            <div class="kpi-grid">
+                <!-- Addiction Score Card -->
+                <div class="glass-card kpi-card kpi-score">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Addiction Score</span>
+                        <div class="kpi-icon kpi-icon-purple"><i class="bi bi-speedometer"></i></div>
+                    </div>
+                    {% if assessments %}
+                    <div class="score-meter-container">
+                        <canvas id="scoreMeter" width="160" height="160"></canvas>
+                        <div class="score-value">{{ assessments[0].addiction_score }}</div>
+                    </div>
+                    <span class="kpi-badge kpi-badge-{{ assessments[0].addiction_level|lower }}">
+                        {{ assessments[0].addiction_level }}
+                    </span>
+                    {% else %}
+                    <div class="kpi-empty">
+                        <p>Take your first assessment</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Streak Card -->
+                <div class="glass-card kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Current Streak</span>
+                        <div class="kpi-icon kpi-icon-orange"><i class="bi bi-fire"></i></div>
+                    </div>
+                    <div class="kpi-value">{{ streak }}</div>
+                    <span class="kpi-sublabel">days in a row</span>
+                </div>
+
+                <!-- Total Assessments -->
+                <div class="glass-card kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Total Assessments</span>
+                        <div class="kpi-icon kpi-icon-teal"><i class="bi bi-clipboard-check"></i></div>
+                    </div>
+                    <div class="kpi-value">{{ assessments|length }}</div>
+                    <span class="kpi-sublabel">completed</span>
+                </div>
+
+                <!-- Emotion Status -->
+                <div class="glass-card kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Emotional State</span>
+                        <div class="kpi-icon kpi-icon-pink"><i class="bi bi-emoji-smile"></i></div>
+                    </div>
+                    {% if assessments %}
+                    <div class="emotion-badge-large">{{ assessments[0].emotion }}</div>
+                    <span class="kpi-sublabel">{{ assessments[0].sentiment }} mood</span>
+                    {% else %}
+                    <div class="kpi-empty">
+                        <p>No data yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="charts-row">
+                <div class="glass-card chart-card">
+                    <h3 class="card-title"><i class="bi bi-graph-up"></i> Progress Over Time</h3>
+                    <div class="chart-container"><canvas id="progressChart"></canvas></div>
+                </div>
+                <div class="glass-card chart-card">
+                    <h3 class="card-title"><i class="bi bi-heart-pulse"></i> Sentiment Trend</h3>
+                    <div class="chart-container"><canvas id="sentimentChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Tips Section -->
+            {% if tips %}
+            <div class="tips-section">
+                <h3 class="section-title-sm"><i class="bi bi-lightbulb"></i> Recommended for You</h3>
+                <div class="tips-grid">
+                    {% for tip in tips %}
+                    <div class="glass-card tip-card">
+                        <div class="tip-category tip-{{ tip.category }}">{{ tip.category|capitalize }}</div>
+                        <h4>{{ tip.title }}</h4>
+                        <p>{{ tip.content }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Fetch progress data
+        fetch('/api/progress-data')
+            .then(r => r.json())
+            .then(data => {
+                // Progress Chart
+                const progressCtx = document.getElementById('progressChart');
+                if (progressCtx && data.labels.length > 0) {
+                    new Chart(progressCtx, {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Addiction Score',
+                                data: data.scores,
+                                borderColor: '#6C63FF',
+                                backgroundColor: 'rgba(108,99,255,0.1)',
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#6C63FF',
+                                pointBorderWidth: 2,
+                                pointRadius: 4
+                            }, {
+                                label: 'Screen Time (hrs)',
+                                data: data.screen_times,
+                                borderColor: '#00F5D4',
+                                backgroundColor: 'rgba(0,245,212,0.1)',
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#00F5D4',
+                                pointBorderWidth: 2,
+                                pointRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { labels: { color: '#94A3B8', font: { family: 'Inter' } } }
+                            },
+                            scales: {
+                                x: { ticks: { color: '#64748B' }, grid: { color: 'rgba(148,163,184,0.1)' } },
+                                y: { ticks: { color: '#64748B' }, grid: { color: 'rgba(148,163,184,0.1)' } }
+                            }
+                        }
+                    });
+                }
+
+                // Sentiment Chart
+                const sentCtx = document.getElementById('sentimentChart');
+                if (sentCtx && data.labels.length > 0) {
+                    new Chart(sentCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Sentiment Score',
+                                data: data.sentiments,
+                                backgroundColor: data.sentiments.map(v => v >= 0 ? 'rgba(0,245,212,0.6)' : 'rgba(255,107,129,0.6)'),
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { labels: { color: '#94A3B8', font: { family: 'Inter' } } }
+                            },
+                            scales: {
+                                x: { ticks: { color: '#64748B' }, grid: { color: 'rgba(148,163,184,0.1)' } },
+                                y: { ticks: { color: '#64748B' }, grid: { color: 'rgba(148,163,184,0.1)' }, suggestedMin: -1, suggestedMax: 1 }
+                            }
+                        }
+                    });
+                }
+            })
+            .catch(err => console.log('Chart data fetch:', err));
+
+        // Addiction Score Meter (circular)
+        const meterCanvas = document.getElementById('scoreMeter');
+        if (meterCanvas) {
+            const score = parseFloat(document.querySelector('.score-value')?.textContent || 0);
+            const ctx = meterCanvas.getContext('2d');
+            const cx = 80, cy = 80, radius = 60;
+            const startAngle = 0.75 * Math.PI;
+            const endAngle = 2.25 * Math.PI;
+            const scoreAngle = startAngle + (score / 100) * (endAngle - startAngle);
+
+            // Background arc
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, startAngle, endAngle);
+            ctx.strokeStyle = 'rgba(148,163,184,0.15)';
+            ctx.lineWidth = 12;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // Score arc
+            let color = score < 35 ? '#00F5D4' : score < 65 ? '#FFA726' : '#FF6B81';
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, startAngle, scoreAngle);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 12;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+        }
+    });
+</script>
+{% endblock %}

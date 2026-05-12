@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% block title %}Results — Addict Aware{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    <nav class="app-nav">
+        <div class="app-nav-inner">
+            <a href="/" class="nav-logo">
+                <span class="logo-icon">◈</span>
+                <span class="logo-text">Addict Aware</span>
+            </a>
+            <div class="app-nav-links">
+                <a href="{{ url_for('user.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <a href="{{ url_for('user.assessment') }}"><i class="bi bi-clipboard2-pulse"></i> Assessment</a>
+                <a href="{{ url_for('user.progress') }}"><i class="bi bi-graph-up"></i> Progress</a>
+            </div>
+            <div class="app-nav-user">
+                <a href="{{ url_for('auth.logout') }}" class="btn-logout"><i class="bi bi-box-arrow-right"></i>
+                    Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="app-main">
+        <div class="container" style="max-width: 800px;">
+            <!-- Results Header -->
+            <div class="results-header">
+                <h1>Your Assessment Results</h1>
+                <p>Here's what our AI found about your digital habits</p>
+            </div>
+
+            <!-- Score Card -->
+            <div class="glass-card results-main-card">
+                <div class="results-score-section">
+                    <div class="results-meter">
+                        <canvas id="resultMeter" width="200" height="200"></canvas>
+                        <div class="results-score-text">
+                            <span class="rs-number" id="animatedScore">0</span>
+                            <span class="rs-label">/ 100</span>
+                        </div>
+                    </div>
+                    <div class="results-info">
+                        <div class="result-badge result-badge-{{ level|lower }}">
+                            {{ level }} Risk
+                        </div>
+                        <h2>Addiction Level: <strong>{{ level }}</strong></h2>
+                        <div class="result-emotion">
+                            <span class="emotion-label">Emotional State:</span>
+                            <span class="emotion-value">{{ emotion }}</span>
+                        </div>
+                        <div class="result-sentiment">
+                            Sentiment: <span class="sentiment-{{ sentiment|lower }}">{{ sentiment }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sentiment Analysis Explanation -->
+            {% if explanation %}
+            <div class="glass-card" style="margin-top: 1.5rem; padding: 1.5rem;">
+                <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                    <div style="font-size: 1.5rem; flex-shrink: 0;">
+                        <i class="bi bi-robot" style="color: var(--accent-teal, #00F5D4);"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0 0 0.5rem 0; font-size: 1rem; color: var(--accent-teal, #00F5D4);">
+                            <i class="bi bi-cpu"></i> AI Sentiment Insight
+                        </h3>
+                        <p style="margin: 0; font-size: 0.95rem; line-height: 1.6; opacity: 0.9;">
+                            {{ explanation }}
+                        </p>
+                        <p style="margin: 0.75rem 0 0 0; font-size: 0.75rem; opacity: 0.5;">
+                            Powered by OpenAI GPT — Analyzing your emotional feedback in the context of digital wellness
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Tips Section -->
+            {% if tips %}
+            <div class="results-tips">
+                <h3><i class="bi bi-lightbulb"></i> Recommendations for You</h3>
+                <div class="tips-grid">
+                    {% for tip in tips %}
+                    <div class="glass-card tip-card">
+                        <h4>{{ tip.title }}</h4>
+                        <p>{{ tip.content }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="results-actions">
+                <a href="{{ url_for('user.dashboard') }}" class="btn-action btn-action-primary">
+                    <i class="bi bi-speedometer2"></i> Go to Dashboard
+                </a>
+                <a href="{{ url_for('user.assessment') }}" class="btn-action btn-action-outline">
+                    <i class="bi bi-arrow-repeat"></i> Take Again
+                </a>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const score = parseFloat('{{ score }}') || 0;
+
+        // Animate score number
+        const scoreEl = document.getElementById('animatedScore');
+        let current = 0;
+        const increment = score / 50;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= score) {
+                scoreEl.textContent = score;
+                clearInterval(timer);
+            } else {
+                scoreEl.textContent = Math.floor(current);
+            }
+        }, 30);
+
+        // Draw meter
+        const canvas = document.getElementById('resultMeter');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            const cx = 100, cy = 100, radius = 75;
+            const startAngle = 0.75 * Math.PI;
+            const endAngle = 2.25 * Math.PI;
+            const scoreAngle = startAngle + (score / 100) * (endAngle - startAngle);
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, startAngle, endAngle);
+            ctx.strokeStyle = 'rgba(148,163,184,0.15)';
+            ctx.lineWidth = 14;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            let color = score < 35 ? '#00F5D4' : score < 65 ? '#FFA726' : '#FF6B81';
+
+            // Animate arc
+            let animAngle = startAngle;
+            const animIncrement = (scoreAngle - startAngle) / 50;
+            const arcTimer = setInterval(() => {
+                animAngle += animIncrement;
+                if (animAngle >= scoreAngle) {
+                    animAngle = scoreAngle;
+                    clearInterval(arcTimer);
+                }
+                ctx.clearRect(0, 0, 200, 200);
+                // Redraw background
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, startAngle, endAngle);
+                ctx.strokeStyle = 'rgba(148,163,184,0.15)';
+                ctx.lineWidth = 14;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                // Draw progress
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, startAngle, animAngle);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 14;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            }, 30);
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% block title %}ML Control Panel — Admin{% endblock %}
+
+{% block body %}
+<div class="admin-layout">
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <span class="logo-icon">◈</span><span class="logo-text">Addict Aware</span>
+            <span class="sidebar-badge">Admin</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link"><i
+                    class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+            <a href="{{ url_for('admin.manage_users') }}" class="sidebar-link"><i
+                    class="bi bi-people"></i><span>Users</span></a>
+            <a href="{{ url_for('admin.content_manager') }}" class="sidebar-link"><i
+                    class="bi bi-journal-medical"></i><span>Health Tips</span></a>
+            <a href="{{ url_for('admin.ml_panel') }}" class="sidebar-link active"><i class="bi bi-cpu"></i><span>ML
+                    Panel</span></a>
+            <a href="{{ url_for('admin.view_feedback') }}" class="sidebar-link"><i
+                    class="bi bi-chat-square-text"></i><span>Feedback</span></a>
+            <div class="sidebar-divider"></div>
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-link sidebar-logout"><i
+                    class="bi bi-box-arrow-left"></i><span>Logout</span></a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <div class="admin-topbar">
+            <button class="sidebar-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+            <h1 class="admin-page-title">ML & NLP Control Panel</h1>
+        </div>
+
+        <div class="admin-content">
+            <!-- Model Status -->
+            <div class="admin-kpi-grid">
+                <div class="admin-kpi-card akpi-purple">
+                    <div class="akpi-icon"><i class="bi bi-cpu"></i></div>
+                    <div class="akpi-info">
+                        <span class="akpi-value">{{ model_info.status|upper if model_info else 'N/A' }}</span>
+                        <span class="akpi-label">Model Status</span>
+                    </div>
+                </div>
+                <div class="admin-kpi-card akpi-teal">
+                    <div class="akpi-icon"><i class="bi bi-tree"></i></div>
+                    <div class="akpi-info">
+                        <span class="akpi-value">{{ model_info.n_estimators if model_info.status == 'trained' else '—'
+                            }}</span>
+                        <span class="akpi-label">Estimators</span>
+                    </div>
+                </div>
+                <div class="admin-kpi-card akpi-orange">
+                    <div class="akpi-icon"><i class="bi bi-layers"></i></div>
+                    <div class="akpi-info">
+                        <span class="akpi-value">{{ model_info.n_features if model_info.status == 'trained' else '—'
+                            }}</span>
+                        <span class="akpi-label">Features</span>
+                    </div>
+                </div>
+                <div class="admin-kpi-card akpi-pink">
+                    <div class="akpi-icon"><i class="bi bi-tags"></i></div>
+                    <div class="akpi-info">
+                        <span class="akpi-value">{{ model_info.classes|length if model_info.status == 'trained' else '—'
+                            }}</span>
+                        <span class="akpi-label">Classes</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature Importance & Retrain -->
+            <div class="admin-charts-row">
+                <div class="glass-card chart-card">
+                    <h3 class="card-title">Feature Importance</h3>
+                    {% if model_info.status == 'trained' %}
+                    <div class="chart-container">
+                        <canvas id="featureChart"></canvas>
+                        <script type="application/json" id="featureData">
+                            {{ model_info.feature_importance | tojson | safe }}
+                        </script>
+                    </div>
+                    {% else %}
+                    <div class="empty-state-sm">Model not trained yet</div>
+                    {% endif %}
+                </div>
+                <div class="glass-card">
+                    <h3 class="card-title">Model Retraining</h3>
+                    <p class="card-desc">Retrain the Random Forest model on the latest dataset. This will replace the
+                        current model.</p>
+                    <form method="POST" action="{{ url_for('admin.retrain_model') }}">
+                        <button type="submit" class="btn-action btn-action-primary btn-retrain"
+                            onclick="this.innerHTML='<i class=\'bi bi-hourglass-split\'></i> Training...'">
+                            <i class="bi bi-arrow-repeat"></i> Retrain Model
+                        </button>
+                    </form>
+
+                    {% if model_logs %}
+                    <h4 class="card-subtitle">Training History</h4>
+                    <div class="training-log">
+                        {% for log in model_logs %}
+                        <div class="log-entry">
+                            <span class="log-date">{{ log.trained_at.strftime('%b %d, %Y %H:%M') if log.trained_at else
+                                '' }}</span>
+                            <span class="log-accuracy">{{ log.accuracy }}%</span>
+                            <span class="log-samples">{{ log.samples_used }} samples</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sentiment Trends -->
+            <div class="glass-card chart-card">
+                <h3 class="card-title"><i class="bi bi-activity"></i> Sentiment Trends Over Time</h3>
+                <div class="chart-container">
+                    <canvas id="sentimentTrendChart"></canvas>
+                    <script type="application/json" id="sentimentTrendsData">
+                        {{ sentiment_trends | tojson | safe }}
+                    </script>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Feature Importance Chart
+        var featureDataEl = document.getElementById('featureData');
+        if (featureDataEl) {
+            var featureCtx = document.getElementById('featureChart');
+            if (featureCtx) {
+                var fImportance = JSON.parse(featureDataEl.textContent);
+                new Chart(featureCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(fImportance).map(function (k) { return k.replace('_', ' ').toUpperCase(); }),
+                        datasets: [{
+                            label: 'Importance',
+                            data: Object.values(fImportance),
+                            backgroundColor: ['#6C63FF', '#00F5D4', '#FFA726'],
+                            borderRadius: 8,
+                            barThickness: 50
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { color: '#64748B' }, grid: { color: 'rgba(148,163,184,0.1)' } },
+                            y: { ticks: { color: '#94A3B8', font: { family: 'Inter', size: 13 } }, grid: { display: false } }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Sentiment Trends Chart
+        var trendDataEl = document.getElementById('sentimentTrendsData');
+        if (trendDataEl) {
+            var sentTrends = JSON.parse(trendDataEl.textContent);
+            var trendCtx = document.getElementById('sentimentTrendChart');
+            if (trendCtx && sentTrends.length > 0) {
+                new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: sentTrends.map(function (d) { return d._id; }),
+                        datasets: [{
+                            label: 'Avg Sentiment',
+                            data: sentTrends.map(function (d) { return d.avg_sentiment; }),
+                            borderColor: '#6C63FF',
+                            backgroundColor: 'rgba(108,99,255,0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#6C63FF'
+                        }, {
+                            label: 'Assessments',
+                            data: sentTrends.map(function (d) { return d.count; }),
+                            borderColor: '#00F5D4',
+                            backgroundColor: 'rgba(0,245,212,0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#00F5D4',
+                            yAxisID: 'y1'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: '#94A3B8' } } },
+                        scales: {
+                            x: { ticks: { color: '#64748B' }, grid: { color: 'rgba(148,163,184,0.1)' } },
+                            y: { ticks: { color: '#64748B' }, grid: { color: 'rgba(148,163,184,0.1)' }, title: { display: true, text: 'Sentiment', color: '#64748B' } },
+                            y1: { position: 'right', ticks: { color: '#64748B' }, grid: { display: false }, title: { display: true, text: 'Count', color: '#64748B' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        var sidebarToggle = document.getElementById('sidebarToggle');
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', function () {
+                document.getElementById('adminSidebar').classList.toggle('collapsed');
+            });
+        }
+    });
+</script>
+{% endblock %}

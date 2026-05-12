@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — Addict Aware{% endblock %}
+
+{% block body %}
+<div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <span class="logo-icon">◈</span>
+            <span class="logo-text">Addict Aware</span>
+            <span class="sidebar-badge">Admin</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link active">
+                <i class="bi bi-grid-1x2"></i><span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('admin.manage_users') }}" class="sidebar-link">
+                <i class="bi bi-people"></i><span>Users</span>
+            </a>
+            <a href="{{ url_for('admin.content_manager') }}" class="sidebar-link">
+                <i class="bi bi-journal-medical"></i><span>Health Tips</span>
+            </a>
+            <a href="{{ url_for('admin.ml_panel') }}" class="sidebar-link">
+                <i class="bi bi-cpu"></i><span>ML Panel</span>
+            </a>
+            <a href="{{ url_for('admin.view_feedback') }}" class="sidebar-link">
+                <i class="bi bi-chat-square-text"></i><span>Feedback</span>
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-link sidebar-logout">
+                <i class="bi bi-box-arrow-left"></i><span>Logout</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <div class="admin-topbar">
+            <button class="sidebar-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+            <h1 class="admin-page-title">Admin Dashboard</h1>
+        </div>
+
+        <div class="admin-content">
+            <!-- KPI Cards -->
+            <div class="admin-kpi-grid">
+                <div class="admin-kpi-card akpi-purple">
+                    <div class="akpi-icon"><i class="bi bi-people"></i></div>
+                    <div class="akpi-info">
+                        <span class="akpi-value">{{ total_users }}</span>
+                        <span class="akpi-label">Total Users</span>
+                    </div>
+                </div>
+                <div class="admin-kpi-card akpi-teal">
+                    <div class="akpi-icon"><i class="bi bi-clipboard-data"></i></div>
+                    <div class="akpi-info">
+                        <span class="akpi-value">{{ total_assessments }}</span>
+                        <span class="akpi-label">Assessments</span>
+                    </div>
+                </div>
+                <div class="admin-kpi-card akpi-orange">
+                    <div class="akpi-icon"><i class="bi bi-speedometer"></i></div>
+                    <div class="akpi-info">
+                        <span class="akpi-value">{{ avg_score }}</span>
+                        <span class="akpi-label">Avg. Score</span>
+                    </div>
+                </div>
+                <div class="admin-kpi-card akpi-pink">
+                    <div class="akpi-icon"><i class="bi bi-chat-dots"></i></div>
+                    <div class="akpi-info">
+                        <span class="akpi-value">{{ total_feedback }}</span>
+                        <span class="akpi-label">Feedback</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="admin-charts-row">
+                <div class="glass-card chart-card">
+                    <h3 class="card-title">Addiction Level Distribution</h3>
+                    <div class="chart-container"><canvas id="addictionChart"></canvas></div>
+                </div>
+                <div class="glass-card chart-card">
+                    <h3 class="card-title">Sentiment Analysis</h3>
+                    <div class="chart-container"><canvas id="sentimentPieChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Recent Assessments -->
+            <div class="glass-card">
+                <h3 class="card-title">Recent Assessments</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Screen Time</th>
+                                <th>Pickups</th>
+                                <th>Level</th>
+                                <th>Score</th>
+                                <th>Sentiment</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in recent_assessments %}
+                            <tr>
+                                <td>{{ a.user_info.name if a.user_info else 'Unknown' }}</td>
+                                <td>{{ a.screen_time }}h</td>
+                                <td>{{ a.phone_pickups }}</td>
+                                <td><span class="level-badge level-{{ a.addiction_level|lower }}">{{ a.addiction_level
+                                        }}</span></td>
+                                <td><strong>{{ a.addiction_score }}</strong></td>
+                                <td><span class="sentiment-{{ a.sentiment|lower }}">{{ a.sentiment }}</span></td>
+                                <td>{{ a.created_at.strftime('%b %d, %Y') if a.created_at else '' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Model Info -->
+            <div class="glass-card">
+                <h3 class="card-title"><i class="bi bi-cpu"></i> ML Model Status</h3>
+                <div class="model-status-row">
+                    <span
+                        class="model-status-badge {{ 'ms-active' if model_info.status == 'trained' else 'ms-inactive' }}">
+                        {{ model_info.status|upper }}
+                    </span>
+                    {% if model_info.status == 'trained' %}
+                    <span class="model-detail">Estimators: {{ model_info.n_estimators }}</span>
+                    <span class="model-detail">Classes: {{ model_info.classes|join(', ') }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Fetch analytics data
+        fetch('/admin/api/analytics')
+            .then(r => r.json())
+            .then(data => {
+                // Addiction Distribution Chart
+                const addCtx = document.getElementById('addictionChart');
+                if (addCtx) {
+                    new Chart(addCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: Object.keys(data.addiction_dist),
+                            datasets: [{
+                                data: Object.values(data.addiction_dist),
+                                backgroundColor: ['#00F5D4', '#FFA726', '#FF6B81'],
+                                borderWidth: 0,
+                                spacing: 4,
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '65%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#94A3B8', font: { family: 'Inter', size: 13 }, padding: 20 }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Sentiment Pie Chart
+                const sentCtx = document.getElementById('sentimentPieChart');
+                if (sentCtx) {
+                    new Chart(sentCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: Object.keys(data.sentiment_dist),
+                            datasets: [{
+                                data: Object.values(data.sentiment_dist),
+                                backgroundColor: ['#6C63FF', '#FF6B81', '#64748B'],
+                                borderWidth: 0,
+                                spacing: 4,
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '65%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#94A3B8', font: { family: 'Inter', size: 13 }, padding: 20 }
+                                }
+                            }
+                        }
+                    });
+                }
+            })
+            .catch(err => console.log('Admin chart error:', err));
+
+        // Sidebar toggle
+        document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+            document.getElementById('adminSidebar').classList.toggle('collapsed');
+        });
+    });
+</script>
+{% endblock %}

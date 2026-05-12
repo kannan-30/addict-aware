@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}User Management — Admin{% endblock %}
+
+{% block body %}
+<div class="admin-layout">
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <span class="logo-icon">◈</span><span class="logo-text">Addict Aware</span>
+            <span class="sidebar-badge">Admin</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link"><i
+                    class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+            <a href="{{ url_for('admin.manage_users') }}" class="sidebar-link active"><i
+                    class="bi bi-people"></i><span>Users</span></a>
+            <a href="{{ url_for('admin.content_manager') }}" class="sidebar-link"><i
+                    class="bi bi-journal-medical"></i><span>Health Tips</span></a>
+            <a href="{{ url_for('admin.ml_panel') }}" class="sidebar-link"><i class="bi bi-cpu"></i><span>ML
+                    Panel</span></a>
+            <a href="{{ url_for('admin.view_feedback') }}" class="sidebar-link"><i
+                    class="bi bi-chat-square-text"></i><span>Feedback</span></a>
+            <div class="sidebar-divider"></div>
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-link sidebar-logout"><i
+                    class="bi bi-box-arrow-left"></i><span>Logout</span></a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <div class="admin-topbar">
+            <button class="sidebar-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+            <h1 class="admin-page-title">User Management</h1>
+        </div>
+
+        <div class="admin-content">
+            <div class="glass-card">
+                <div class="card-top-bar">
+                    <h3 class="card-title">Registered Users ({{ users|length }})</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Assessments</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                            <tr>
+                                <td><strong>{{ u.name }}</strong></td>
+                                <td>{{ u.email }}</td>
+                                <td>{{ u.assessment_count }}</td>
+                                <td>{{ u.created_at.strftime('%b %d, %Y') if u.created_at else 'N/A' }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=u._id) }}"
+                                        style="display:inline"
+                                        onsubmit="return confirm('Delete this user and all their data?')">
+                                        <button type="submit" class="btn-sm btn-sm-danger">
+                                            <i class="bi bi-trash3"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+        document.getElementById('adminSidebar').classList.toggle('collapsed');
+    });
+</script>
+{% endblock %}

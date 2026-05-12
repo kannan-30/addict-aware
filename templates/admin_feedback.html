@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Feedback Review — Admin{% endblock %}
+
+{% block body %}
+<div class="admin-layout">
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <span class="logo-icon">◈</span><span class="logo-text">Addict Aware</span>
+            <span class="sidebar-badge">Admin</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link"><i
+                    class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+            <a href="{{ url_for('admin.manage_users') }}" class="sidebar-link"><i
+                    class="bi bi-people"></i><span>Users</span></a>
+            <a href="{{ url_for('admin.content_manager') }}" class="sidebar-link"><i
+                    class="bi bi-journal-medical"></i><span>Health Tips</span></a>
+            <a href="{{ url_for('admin.ml_panel') }}" class="sidebar-link"><i class="bi bi-cpu"></i><span>ML
+                    Panel</span></a>
+            <a href="{{ url_for('admin.view_feedback') }}" class="sidebar-link active"><i
+                    class="bi bi-chat-square-text"></i><span>Feedback</span></a>
+            <div class="sidebar-divider"></div>
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-link sidebar-logout"><i
+                    class="bi bi-box-arrow-left"></i><span>Logout</span></a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <div class="admin-topbar">
+            <button class="sidebar-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+            <h1 class="admin-page-title">Feedback Review</h1>
+        </div>
+
+        <div class="admin-content">
+            <div class="glass-card">
+                <h3 class="card-title">User Feedback ({{ feedback_list|length }})</h3>
+                {% if feedback_list %}
+                <div class="feedback-grid">
+                    {% for fb in feedback_list %}
+                    <div class="feedback-card">
+                        <div class="fb-header">
+                            <span class="fb-user">{{ fb.user_info.name if fb.user_info else 'Unknown' }}</span>
+                            <span class="fb-date">{{ fb.created_at.strftime('%b %d, %Y') if fb.created_at else ''
+                                }}</span>
+                        </div>
+                        <div class="fb-rating">
+                            {% for i in range(fb.rating|default(0)) %}
+                            <i class="bi bi-star-fill star-filled"></i>
+                            {% endfor %}
+                            {% for i in range(5 - fb.rating|default(0)) %}
+                            <i class="bi bi-star star-empty"></i>
+                            {% endfor %}
+                        </div>
+                        <p class="fb-message">{{ fb.message }}</p>
+                        {% if fb.sentiment %}
+                        <span class="fb-sentiment sentiment-{{ fb.sentiment|lower }}">{{ fb.sentiment }}</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state-sm">No feedback received yet.</div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+        document.getElementById('adminSidebar').classList.toggle('collapsed');
+    });
+</script>
+{% endblock %}

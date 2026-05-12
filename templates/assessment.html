@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}Assessment — Addict Aware{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    <nav class="app-nav">
+        <div class="app-nav-inner">
+            <a href="/" class="nav-logo">
+                <span class="logo-icon">◈</span>
+                <span class="logo-text">Addict Aware</span>
+            </a>
+            <div class="app-nav-links">
+                <a href="{{ url_for('user.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <a href="{{ url_for('user.assessment') }}" class="active"><i class="bi bi-clipboard2-pulse"></i>
+                    Assessment</a>
+                <a href="{{ url_for('user.progress') }}"><i class="bi bi-graph-up"></i> Progress</a>
+                <a href="{{ url_for('user.tips') }}"><i class="bi bi-lightbulb"></i> Tips</a>
+                <a href="{{ url_for('user.feedback') }}"><i class="bi bi-chat-dots"></i> Feedback</a>
+            </div>
+            <div class="app-nav-user">
+                <a href="{{ url_for('auth.logout') }}" class="btn-logout"><i class="bi bi-box-arrow-right"></i>
+                    Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="app-main">
+        <div class="container" style="max-width: 720px;">
+            <div class="glass-card assessment-card">
+                <div class="assessment-header">
+                    <div class="assessment-icon"><i class="bi bi-clipboard2-data"></i></div>
+                    <h1>Digital Wellness Assessment</h1>
+                    <p>Answer honestly for the most accurate results. Your data helps our AI provide personalized
+                        insights.</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('user.assessment') }}" class="assessment-form">
+                    <!-- Screen Time -->
+                    <div class="form-group-custom">
+                        <label for="screen_time">
+                            <i class="bi bi-display"></i> Daily Screen Time
+                        </label>
+                        <div class="input-with-unit">
+                            <input type="number" name="screen_time" id="screen_time" class="form-input"
+                                placeholder="e.g., 6.5" step="0.1" min="0" max="24" required>
+                            <span class="input-unit">hours/day</span>
+                        </div>
+                        <div class="range-indicator">
+                            <span class="ri-low">Healthy: 0-3h</span>
+                            <span class="ri-mid">Moderate: 3-7h</span>
+                            <span class="ri-high">High: 7h+</span>
+                        </div>
+                    </div>
+
+                    <!-- Phone Pickups -->
+                    <div class="form-group-custom">
+                        <label for="phone_pickups">
+                            <i class="bi bi-phone"></i> Phone Pickups
+                        </label>
+                        <div class="input-with-unit">
+                            <input type="number" name="phone_pickups" id="phone_pickups" class="form-input"
+                                placeholder="e.g., 45" min="0" max="500" required>
+                            <span class="input-unit">times/day</span>
+                        </div>
+                        <div class="range-indicator">
+                            <span class="ri-low">Low: 0-30</span>
+                            <span class="ri-mid">Moderate: 30-70</span>
+                            <span class="ri-high">High: 70+</span>
+                        </div>
+                    </div>
+
+                    <!-- Social Media Time -->
+                    <div class="form-group-custom">
+                        <label for="social_media_time">
+                            <i class="bi bi-chat-square-heart"></i> Social Media Time
+                        </label>
+                        <div class="input-with-unit">
+                            <input type="number" name="social_media_time" id="social_media_time" class="form-input"
+                                placeholder="e.g., 2.5" step="0.1" min="0" max="24" required>
+                            <span class="input-unit">hours/day</span>
+                        </div>
+                    </div>
+
+                    <!-- Emotional Text -->
+                    <div class="form-group-custom">
+                        <label for="emotional_text">
+                            <i class="bi bi-chat-heart"></i> How are you feeling about your digital habits?
+                        </label>
+                        <textarea name="emotional_text" id="emotional_text" class="form-input form-textarea" rows="4"
+                            placeholder="Share your thoughts honestly... e.g., 'I feel anxious when I can't check my phone'"></textarea>
+                        <span class="form-helper">This text will be analyzed by our NLP sentiment engine</span>
+                    </div>
+
+                    <button type="submit" class="btn-auth btn-assess">
+                        <i class="bi bi-cpu"></i>
+                        <span>Analyze My Habits</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

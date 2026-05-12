@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Progress — Addict Aware{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    <nav class="app-nav">
+        <div class="app-nav-inner">
+            <a href="/" class="nav-logo"><span class="logo-icon">◈</span><span class="logo-text">Addict Aware</span></a>
+            <div class="app-nav-links">
+                <a href="{{ url_for('user.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <a href="{{ url_for('user.assessment') }}"><i class="bi bi-clipboard2-pulse"></i> Assessment</a>
+                <a href="{{ url_for('user.progress') }}" class="active"><i class="bi bi-graph-up"></i> Progress</a>
+                <a href="{{ url_for('user.tips') }}"><i class="bi bi-lightbulb"></i> Tips</a>
+                <a href="{{ url_for('user.feedback') }}"><i class="bi bi-chat-dots"></i> Feedback</a>
+            </div>
+            <div class="app-nav-user">
+                <a href="{{ url_for('auth.logout') }}" class="btn-logout"><i class="bi bi-box-arrow-right"></i>
+                    Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="app-main">
+        <div class="container-fluid px-4">
+            <div class="dash-header">
+                <div>
+                    <h1 class="dash-title">Progress History</h1>
+                    <p class="dash-subtitle">Track your digital wellness journey over time</p>
+                </div>
+                <a href="{{ url_for('user.download_report') }}" class="btn-action btn-action-outline">
+                    <i class="bi bi-file-earmark-pdf"></i> Download Report
+                </a>
+            </div>
+
+            {% if assessments %}
+            <div class="glass-card">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Screen Time</th>
+                                <th>Pickups</th>
+                                <th>Social Media</th>
+                                <th>Addiction Level</th>
+                                <th>Score</th>
+                                <th>Sentiment</th>
+                                <th>Emotion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in assessments %}
+                            <tr>
+                                <td>{{ a.created_at.strftime('%b %d, %Y') if a.created_at else 'N/A' }}</td>
+                                <td>{{ a.screen_time }}h</td>
+                                <td>{{ a.phone_pickups }}</td>
+                                <td>{{ a.social_media_time }}h</td>
+                                <td>
+                                    <span class="level-badge level-{{ a.addiction_level|lower }}">{{ a.addiction_level
+                                        }}</span>
+                                </td>
+                                <td><strong>{{ a.addiction_score }}</strong></td>
+                                <td>
+                                    <span class="sentiment-{{ a.sentiment|lower }}">{{ a.sentiment }}</span>
+                                </td>
+                                <td>{{ a.emotion }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="glass-card empty-state">
+                <i class="bi bi-clipboard-x"></i>
+                <h3>No assessments yet</h3>
+                <p>Take your first assessment to start tracking progress.</p>
+                <a href="{{ url_for('user.assessment') }}" class="btn-action btn-action-primary">
+                    <i class="bi bi-plus-lg"></i> Take Assessment
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

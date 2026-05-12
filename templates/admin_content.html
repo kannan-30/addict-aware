@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}Content Manager — Admin{% endblock %}
+
+{% block body %}
+<div class="admin-layout">
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <span class="logo-icon">◈</span><span class="logo-text">Addict Aware</span>
+            <span class="sidebar-badge">Admin</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link"><i
+                    class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+            <a href="{{ url_for('admin.manage_users') }}" class="sidebar-link"><i
+                    class="bi bi-people"></i><span>Users</span></a>
+            <a href="{{ url_for('admin.content_manager') }}" class="sidebar-link active"><i
+                    class="bi bi-journal-medical"></i><span>Health Tips</span></a>
+            <a href="{{ url_for('admin.ml_panel') }}" class="sidebar-link"><i class="bi bi-cpu"></i><span>ML
+                    Panel</span></a>
+            <a href="{{ url_for('admin.view_feedback') }}" class="sidebar-link"><i
+                    class="bi bi-chat-square-text"></i><span>Feedback</span></a>
+            <div class="sidebar-divider"></div>
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-link sidebar-logout"><i
+                    class="bi bi-box-arrow-left"></i><span>Logout</span></a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <div class="admin-topbar">
+            <button class="sidebar-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button>
+            <h1 class="admin-page-title">Awareness Content Manager</h1>
+        </div>
+
+        <div class="admin-content">
+            <!-- Add New Tip -->
+            <div class="glass-card">
+                <h3 class="card-title"><i class="bi bi-plus-circle"></i> Add New Health Tip</h3>
+                <form method="POST" action="{{ url_for('admin.content_manager') }}" class="admin-form">
+                    <div class="admin-form-row">
+                        <div class="form-group-custom">
+                            <label for="title">Title</label>
+                            <input type="text" name="title" id="title" class="form-input" placeholder="Tip title"
+                                required>
+                        </div>
+                        <div class="form-group-custom">
+                            <label for="category">Category</label>
+                            <select name="category" id="category" class="form-input">
+                                <option value="low">Low Risk</option>
+                                <option value="medium">Medium Risk</option>
+                                <option value="high">High Risk</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group-custom">
+                        <label for="content">Content</label>
+                        <textarea name="content" id="content" class="form-input form-textarea" rows="3"
+                            placeholder="Tip content..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-action btn-action-primary">
+                        <i class="bi bi-plus-lg"></i> Add Tip
+                    </button>
+                </form>
+            </div>
+
+            <!-- Existing Tips -->
+            <div class="glass-card">
+                <h3 class="card-title">Existing Tips ({{ tips|length }})</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Content</th>
+                                <th>Category</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tip in tips %}
+                            <tr>
+                                <td><strong>{{ tip.title }}</strong></td>
+                                <td class="content-cell">{{ tip.content[:100] }}{% if tip.content|length > 100 %}...{%
+                                    endif %}</td>
+                                <td><span class="level-badge level-{{ tip.category }}">{{ tip.category|capitalize
+                                        }}</span></td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('admin.delete_tip', tip_id=tip._id) }}"
+                                        style="display:inline" onsubmit="return confirm('Delete this tip?')">
+                                        <button type="submit" class="btn-sm btn-sm-danger"><i
+                                                class="bi bi-trash3"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+        document.getElementById('adminSidebar').classList.toggle('collapsed');
+    });
+</script>
+{% endblock %}

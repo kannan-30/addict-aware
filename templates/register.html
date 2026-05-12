@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Register — Addict Aware{% endblock %}
+
+{% block body %}
+<div class="auth-page">
+    <div class="auth-bg-shapes">
+        <div class="auth-shape auth-shape-1"></div>
+        <div class="auth-shape auth-shape-2"></div>
+    </div>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <a href="/" class="auth-logo">
+                    <span class="logo-icon">◈</span>
+                    <span class="logo-text">Addict Aware</span>
+                </a>
+                <h1>Create Account</h1>
+                <p>Start your digital wellness journey</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form">
+                <div class="form-float">
+                    <i class="bi bi-person form-icon"></i>
+                    <input type="text" name="name" id="name" class="form-input" placeholder="Full Name" required>
+                </div>
+
+                <div class="form-float">
+                    <i class="bi bi-envelope form-icon"></i>
+                    <input type="email" name="email" id="email" class="form-input" placeholder="Email address" required>
+                </div>
+
+                <div class="form-float">
+                    <i class="bi bi-lock form-icon"></i>
+                    <input type="password" name="password" id="password" class="form-input"
+                        placeholder="Password (min 6 chars)" required minlength="6">
+                    <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+
+                <div class="form-float">
+                    <i class="bi bi-lock-fill form-icon"></i>
+                    <input type="password" name="confirm_password" id="confirm_password" class="form-input"
+                        placeholder="Confirm Password" required minlength="6">
+                </div>
+
+                <button type="submit" class="btn-auth" id="registerBtn">
+                    <span>Create Account</span>
+                    <i class="bi bi-rocket-takeoff"></i>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% block title %}Addict Aware — Break Free from Digital Gravity{% endblock %}
+
+{% block body %}
+<!-- Navigation -->
+<nav class="navbar-landing" id="navbar">
+    <div class="nav-container">
+        <a href="/" class="nav-logo">
+            <span class="logo-icon">◈</span>
+            <span class="logo-text">Addict Aware</span>
+        </a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#how-it-works">How It Works</a>
+            <a href="#about">About</a>
+            <a href="{{ url_for('auth.login') }}" class="nav-btn nav-btn-outline">Login</a>
+            <a href="{{ url_for('auth.register') }}" class="nav-btn nav-btn-primary">Get Started</a>
+        </div>
+        <button class="nav-toggle" id="navToggle">
+            <i class="bi bi-list"></i>
+        </button>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-particles" id="heroParticles"></div>
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+
+    <div class="hero-content">
+        <div class="hero-badge">
+            <span class="badge-dot"></span>
+            AI-Powered Digital Wellness
+        </div>
+        <h1 class="hero-title">
+            Break Free from<br>
+            <span class="hero-gradient-text">Digital Gravity</span>
+        </h1>
+        <p class="hero-subtitle">
+            Understand your digital habits with machine learning-powered addiction prediction
+            and emotional analysis. Take control of your screen time, one insight at a time.
+        </p>
+        <div class="hero-actions">
+            <a href="{{ url_for('auth.register') }}" class="btn-hero btn-hero-primary">
+                Start Your Journey
+                <i class="bi bi-arrow-right"></i>
+            </a>
+            <a href="#how-it-works" class="btn-hero btn-hero-glass">
+                <i class="bi bi-play-circle"></i>
+                See How It Works
+            </a>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <span class="stat-number" data-target="95">0</span><span class="stat-suffix">%</span>
+                <span class="stat-label">Prediction Accuracy</span>
+            </div>
+            <div class="hero-stat-divider"></div>
+            <div class="hero-stat">
+                <span class="stat-number" data-target="500">0</span><span class="stat-suffix">+</span>
+                <span class="stat-label">Data Points Trained</span>
+            </div>
+            <div class="hero-stat-divider"></div>
+            <div class="hero-stat">
+                <span class="stat-number" data-target="3">0</span>
+                <span class="stat-label">ML Models Active</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating elements -->
+    <div class="floating-card floating-card-1">
+        <div class="fc-icon fc-icon-purple"><i class="bi bi-graph-up-arrow"></i></div>
+        <div class="fc-text">Addiction Score<br><strong>Analyzed</strong></div>
+    </div>
+    <div class="floating-card floating-card-2">
+        <div class="fc-icon fc-icon-teal"><i class="bi bi-emoji-smile"></i></div>
+        <div class="fc-text">Sentiment<br><strong>Positive ↑</strong></div>
+    </div>
+    <div class="floating-card floating-card-3">
+        <div class="fc-icon fc-icon-pink"><i class="bi bi-shield-check"></i></div>
+        <div class="fc-text">Risk Level<br><strong>Low</strong></div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section" id="features">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag">Features</span>
+            <h2 class="section-title">Intelligent Digital <span class="gradient-text">Wellness Tools</span></h2>
+            <p class="section-subtitle">Powered by machine learning and natural language processing to give you
+                actionable insights.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card" data-aos="fade-up">
+                <div class="feature-icon feature-icon-purple">
+                    <i class="bi bi-cpu"></i>
+                </div>
+                <h3>ML Addiction Prediction</h3>
+                <p>Random Forest classifier trained on behavioral data to predict your digital addiction level with high
+                    accuracy.</p>
+            </div>
+
+            <div class="feature-card" data-aos="fade-up" data-delay="100">
+                <div class="feature-icon feature-icon-teal">
+                    <i class="bi bi-chat-heart"></i>
+                </div>
+                <h3>Sentiment Analysis</h3>
+                <p>Advanced NLP analyzes your emotional feedback to understand how digital habits affect your mental
+                    state.</p>
+            </div>
+
+            <div class="feature-card" data-aos="fade-up" data-delay="200">
+                <div class="feature-icon feature-icon-orange">
+                    <i class="bi bi-bar-chart-line"></i>
+                </div>
+                <h3>Progress Tracking</h3>
+                <p>Visual progress reports with interactive charts showing your journey toward digital wellness over
+                    time.</p>
+            </div>
+
+            <div class="feature-card" data-aos="fade-up" data-delay="300">
+                <div class="feature-icon feature-icon-pink">
+                    <i class="bi bi-lightbulb"></i>
+                </div>
+                <h3>Smart Health Tips</h3>
+                <p>Personalized awareness content and recommendations based on your addiction level and emotional
+                    patterns.</p>
+            </div>
+
+            <div class="feature-card" data-aos="fade-up" data-delay="400">
+                <div class="feature-icon feature-icon-green">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                </div>
+                <h3>PDF Reports</h3>
+                <p>Download comprehensive progress reports for personal tracking or sharing with healthcare
+                    professionals.</p>
+            </div>
+
+            <div class="feature-card" data-aos="fade-up" data-delay="500">
+                <div class="feature-icon feature-icon-blue">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+                <h3>Secure & Private</h3>
+                <p>JWT-based authentication with encrypted passwords. Your data stays protected and confidential.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="hiw-section" id="how-it-works">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag">Process</span>
+            <h2 class="section-title">How <span class="gradient-text">It Works</span></h2>
+            <p class="section-subtitle">A simple 4-step process to understand and improve your digital wellness.</p>
+        </div>
+
+        <div class="hiw-timeline">
+            <div class="hiw-step">
+                <div class="hiw-number">01</div>
+                <div class="hiw-content">
+                    <h3>Take the Assessment</h3>
+                    <p>Answer questions about your screen time, phone pickups, social media usage, and share how you
+                        feel.</p>
+                </div>
+                <div class="hiw-icon"><i class="bi bi-clipboard2-data"></i></div>
+            </div>
+            <div class="hiw-connector"></div>
+            <div class="hiw-step">
+                <div class="hiw-number">02</div>
+                <div class="hiw-content">
+                    <h3>AI Analysis</h3>
+                    <p>Our Random Forest model predicts your addiction level while NLP analyzes your emotional state.
+                    </p>
+                </div>
+                <div class="hiw-icon"><i class="bi bi-gear-wide-connected"></i></div>
+            </div>
+            <div class="hiw-connector"></div>
+            <div class="hiw-step">
+                <div class="hiw-number">03</div>
+                <div class="hiw-content">
+                    <h3>Get Your Results</h3>
+                    <p>Receive your addiction score, emotional analysis, and personalized recommendations instantly.</p>
+                </div>
+                <div class="hiw-icon"><i class="bi bi-graph-up"></i></div>
+            </div>
+            <div class="hiw-connector"></div>
+            <div class="hiw-step">
+                <div class="hiw-number">04</div>
+                <div class="hiw-content">
+                    <h3>Track Progress</h3>
+                    <p>Monitor your improvement over time with visual charts and download comprehensive reports.</p>
+                </div>
+                <div class="hiw-icon"><i class="bi bi-trophy"></i></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About / CTA Section -->
+<section class="cta-section" id="about">
+    <div class="container">
+        <div class="cta-card">
+            <div class="cta-glow"></div>
+            <h2>Ready to Understand Your<br><span class="gradient-text">Digital Habits?</span></h2>
+            <p>Join Addict Aware and start your journey toward healthier screen time. AI-powered insights, zero
+                judgment.</p>
+            <a href="{{ url_for('auth.register') }}" class="btn-hero btn-hero-primary">
+                Create Free Account
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="logo-icon">◈</span>
+                <span class="logo-text">Addict Aware</span>
+                <p class="footer-tagline">AI-Powered Digital Wellness</p>
+            </div>
+            <div class="footer-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="{{ url_for('auth.login') }}">Login</a>
+                <a href="{{ url_for('auth.register') }}">Register</a>
+            </div>
+            <div class="footer-copy">
+                &copy; 2024 Addict Aware. Built with Flask, scikit-learn, and VADER.
+            </div>
+        </div>
+    </div>
+</footer>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Animate hero stats counters
+    document.addEventListener('DOMContentLoaded', () => {
+        const counters = document.querySelectorAll('.stat-number');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+                    const target = parseInt(el.dataset.target);
+                    let current = 0;
+                    const increment = target / 60;
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= target) {
+                            el.textContent = target;
+                            clearInterval(timer);
+                        } else {
+                            el.textContent = Math.floor(current);
+                        }
+                    }, 25);
+                    observer.unobserve(el);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        counters.forEach(c => observer.observe(c));
+    });
+</script>
+{% endblock %}

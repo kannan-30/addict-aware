@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Login — Addict Aware{% endblock %}
+
+{% block body %}
+<div class="auth-page">
+    <div class="auth-bg-shapes">
+        <div class="auth-shape auth-shape-1"></div>
+        <div class="auth-shape auth-shape-2"></div>
+    </div>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <a href="/" class="auth-logo">
+                    <span class="logo-icon">◈</span>
+                    <span class="logo-text">Addict Aware</span>
+                </a>
+                <h1>Welcome Back</h1>
+                <p>Sign in to your wellness dashboard</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.login') }}" class="auth-form">
+                <div class="form-float">
+                    <i class="bi bi-envelope form-icon"></i>
+                    <input type="email" name="email" id="email" class="form-input" placeholder="Email address" required>
+                </div>
+
+                <div class="form-float">
+                    <i class="bi bi-lock form-icon"></i>
+                    <input type="password" name="password" id="password" class="form-input" placeholder="Password"
+                        required>
+                    <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+
+                <button type="submit" class="btn-auth" id="loginBtn">
+                    <span>Sign In</span>
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="{{ url_for('auth.register') }}">Create one</a></p>
+            </div>
+
+
+
+        </div>
+    </div>
+</div>
+{% endblock %}
